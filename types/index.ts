@@ -1,3 +1,5 @@
+import { Tables } from "./database.types";
+
 export interface SearchParams {
   page?: string;
   search?: string;
@@ -7,3 +9,6 @@ export interface SearchParams {
   filter?: string;
   range?: string;
 }
+
+export type Job = Tables<"jobs">;
+export type JobConfig = Tables<"job_config">;

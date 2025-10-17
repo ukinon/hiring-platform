@@ -26,9 +26,7 @@ export default async function LeadDetailsPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="px-6 max-w-7xl mx-auto overflow-hidden">
-        <IndexClientPage />
-      </div>
+      <IndexClientPage />
     </HydrationBoundary>
   );
 }
