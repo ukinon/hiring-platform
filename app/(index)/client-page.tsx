@@ -17,9 +17,9 @@ import JobDetail from "@/components/job/job-detail";
 
 export default function IndexClientPage() {
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
-  const { data: jobs } = useJobs();
+  const { data: jobs, isLoading } = useJobs();
 
-  if (!jobs || jobs.length === 0) {
+  if ((!jobs || jobs.length === 0) && !isLoading) {
     return <IndexEmptyPage />;
   }
 

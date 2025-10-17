@@ -1,5 +1,5 @@
 import React from "react";
 
-export default function ApplyPage() {
+export default function ApplyEmptyPage() {
   return <div>page</div>;
 }

@@ -90,6 +90,7 @@
   --font-size-s: 0.75rem;
   --font-size-m: 0.875rem;
   --font-size-l: 1rem;
+  --font-size-xl: 1.125rem;
   --font-size-heading-s: 1.25rem;
   --font-size-heading-m: 1.5rem;
   --font-size-heading-l: 2rem;
@@ -100,6 +101,7 @@
   --line-height-s: 1.25rem;
   --line-height-m: 1.5rem;
   --line-height-l: 1.75rem;
+  --line-height-xl: 1.75rem;
   --line-height-heading-s: 2rem;
   --line-height-heading-m: 2.25rem;
   --line-height-heading-l: 2.75rem;
@@ -251,6 +253,18 @@
   .text-l-bold {
     font-size: var(--font-size-l);
     line-height: var(--line-height-l);
+    font-weight: 700;
+  }
+
+  .text-xl-regular {
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-xl);
+    font-weight: 400;
+  }
+
+  .text-xl-bold {
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-xl);
     font-weight: 700;
   }
 
