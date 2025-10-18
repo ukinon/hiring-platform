@@ -10,6 +10,7 @@ import {
 import {
   Control,
   ControllerRenderProps,
+  ControllerFieldState,
   FieldPath,
   FieldValues,
 } from "react-hook-form";
@@ -23,7 +24,8 @@ interface FormFieldProps<
   label?: string;
   description?: string;
   children: (
-    field: ControllerRenderProps<TFieldValues, TName>
+    field: ControllerRenderProps<TFieldValues, TName>,
+    fieldState: ControllerFieldState
   ) => React.ReactNode;
 }
 
@@ -41,10 +43,10 @@ export default function FormField<
     <ShadcnFormField
       control={control}
       name={name}
-      render={({ field }) => (
+      render={({ field, fieldState }) => (
         <FormItem>
           {label && <FormLabel>{label}</FormLabel>}
-          <FormControl>{children(field)}</FormControl>
+          <FormControl>{children(field, fieldState)}</FormControl>
           {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
         </FormItem>

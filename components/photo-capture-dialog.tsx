@@ -265,6 +265,7 @@ export default function PhotoCaptureDialog({
   const [isReady, setIsReady] = useState(false);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [isCountdownActive, setIsCountdownActive] = useState(false);
 
   const stopHandDetection = useCallback(() => {
     if (animationFrameRef.current) {
@@ -360,7 +361,8 @@ export default function PhotoCaptureDialog({
       !isModelLoaded ||
       capturedImage ||
       !currentPose ||
-      !detectedPose
+      !detectedPose ||
+      isCountdownActive
     )
       return;
 
@@ -376,10 +378,18 @@ export default function PhotoCaptureDialog({
           setDetectedPose(null);
         }, 800);
       } else if (currentPose === "pose3") {
+        setIsCountdownActive(true);
         setCountdown(3);
       }
     }
-  }, [isReady, isModelLoaded, capturedImage, currentPose, detectedPose]);
+  }, [
+    isReady,
+    isModelLoaded,
+    capturedImage,
+    currentPose,
+    detectedPose,
+    isCountdownActive,
+  ]);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -387,6 +397,7 @@ export default function PhotoCaptureDialog({
     if (countdown === 0) {
       capturePhoto();
       setCountdown(null);
+      setIsCountdownActive(false);
       return;
     }
 
@@ -403,6 +414,7 @@ export default function PhotoCaptureDialog({
     setDetectedPose(null);
     setHandPosition(null);
     setCountdown(null);
+    setIsCountdownActive(false);
     setIsReady(false);
     setIsModelLoaded(false);
     lastDetectionRef.current = { ...INITIAL_DETECTION_STATE };
@@ -432,6 +444,7 @@ export default function PhotoCaptureDialog({
     setDetectedPose(null);
     setHandPosition(null);
     setCountdown(null);
+    setIsCountdownActive(false);
     setIsReady(false);
     setIsModelLoaded(false);
     lastDetectionRef.current = { ...INITIAL_DETECTION_STATE };

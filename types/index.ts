@@ -12,3 +12,4 @@ export interface SearchParams {
 
 export type Job = Tables<"jobs">;
 export type JobConfig = Tables<"job_config">;
+export type Candidate = Tables<"candidates">;

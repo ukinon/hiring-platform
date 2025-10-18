@@ -37,9 +37,18 @@ interface ComboboxProps {
   className?: string;
   disabled?: boolean;
   width?: string;
+  triggerWidth?: string;
+  contentWidth?: string;
   onLoadMore?: LoadMoreFunction;
   hasMore?: boolean;
   isLoading?: boolean;
+  allowClear?: boolean;
+  renderTriggerValue?: (item: ComboboxItem | undefined) => React.ReactNode;
+  renderItem?: (item: ComboboxItem, selected: boolean) => React.ReactNode;
+  triggerClassName?: string;
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
+  triggerSize?: React.ComponentProps<typeof Button>["size"];
+  contentClassName?: string;
 }
 
 export function Combobox({
@@ -52,9 +61,18 @@ export function Combobox({
   className,
   disabled = false,
   width = "200px",
+  triggerWidth,
+  contentWidth,
   onLoadMore,
   hasMore = false,
   isLoading = false,
+  allowClear = true,
+  renderTriggerValue,
+  renderItem,
+  triggerClassName,
+  triggerVariant = "outline",
+  triggerSize = "default",
+  contentClassName,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState("");
@@ -72,6 +90,11 @@ export function Combobox({
     setInternalValue(newValue);
     onValueChange?.(newValue);
   };
+
+  const selectedItem = React.useMemo(
+    () => items.find((item) => item.value === value),
+    [items, value]
+  );
 
   const handleScroll = React.useCallback(async () => {
     if (!listRef.current || !onLoadMore || !hasMore || loadingMore) return;
@@ -105,25 +128,42 @@ export function Combobox({
     <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant={triggerVariant}
+          size={triggerSize}
           role="combobox"
           aria-expanded={open}
           disabled={disabled || isLoading}
-          className={cn(`w-[${width}] justify-between w-full`, className)}
+          className={cn(
+            triggerWidth ?? width ? `w-[${triggerWidth ?? width}]` : undefined,
+            "w-full justify-between",
+            className,
+            triggerClassName
+          )}
         >
-          <p className="line-clamp-1 text-start text-m-regular text-muted-foreground">
+          <span className="line-clamp-1 text-start text-m-regular text-muted-foreground">
             {isLoading ? (
               <>Loading...</>
-            ) : value ? (
-              items.find((item) => item.value === value)?.label
+            ) : selectedItem ? (
+              renderTriggerValue ? (
+                <>{renderTriggerValue(selectedItem)}</>
+              ) : (
+                selectedItem.label
+              )
             ) : (
               placeholder
             )}
-          </p>
+          </span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={`w-[${width}] p-0`} align="start">
+      <PopoverContent
+        className={cn(
+          contentWidth ?? width ? `w-[${contentWidth ?? width}]` : undefined,
+          "p-0",
+          contentClassName
+        )}
+        align="start"
+      >
         <Command className="max-w-none">
           <CommandInput
             placeholder={searchPlaceholder}
@@ -150,11 +190,17 @@ export function Combobox({
                     keywords={item.keywords ?? [item.label]}
                     value={item.value}
                     onSelect={(currentValue) => {
-                      setValue(currentValue === value ? "" : currentValue);
+                      const nextValue =
+                        currentValue === value && allowClear
+                          ? ""
+                          : currentValue;
+                      setValue(nextValue);
                       setOpen(false);
                     }}
                   >
-                    {item.label}
+                    {renderItem
+                      ? renderItem(item, value === item.value)
+                      : item.label}
                     <Check
                       className={cn(
                         "ml-auto h-4 w-4",

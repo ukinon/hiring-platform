@@ -1,21 +1,28 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useJobDetail } from "@/hooks/react-queries";
 import { ArrowLeft } from "lucide-react";
 import React from "react";
 import ApplyEmptyPage from "./empty-page";
 import { useRouter } from "next/navigation";
 import ApplicationForm from "@/components/form/application-form";
+import { useApplyMutation } from "@/hooks/react-queries/candidate";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import Image from "next/image";
 
 export default function ApplyClientPage({ id }: { id: string }) {
   const { data, isLoading } = useJobDetail(id);
+  const { mutate, isPending, isSuccess } = useApplyMutation();
+
   const router = useRouter();
 
   if (!data) {
@@ -32,6 +39,39 @@ export default function ApplyClientPage({ id }: { id: string }) {
     }
 
     return null;
+  }
+
+  if (isSuccess) {
+    setTimeout(() => {
+      router.push("/");
+    }, 5000);
+
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <Image
+              src={"/assets/apply-success.png"}
+              alt="Success"
+              width={214}
+              height={214}
+              className="size-[214px] aspect-square"
+            />
+          </EmptyMedia>
+        </EmptyHeader>
+
+        <EmptyContent>
+          <EmptyTitle className="heading-m-bold">
+            🎉 Your application was sent!
+          </EmptyTitle>
+          <EmptyDescription className="text-l-regular w-full">
+            {
+              "   Congratulations! You've taken the first step towards a rewarding career at Rakamin. We look forward to learning more about you during the application process."
+            }
+          </EmptyDescription>
+        </EmptyContent>
+      </Empty>
+    );
   }
 
   return (
@@ -55,8 +95,12 @@ export default function ApplyClientPage({ id }: { id: string }) {
           </div>
         </CardHeader>
 
-        <CardContent className="h-full overflow-y-scroll mb-12">
-          <ApplicationForm jobConfig={data.job_config[0]} />
+        <CardContent className="h-full overflow-y-scroll">
+          <ApplicationForm
+            jobConfig={data.job_config[0]}
+            onSubmit={(data) => mutate(data)}
+            isPending={isPending}
+          />
         </CardContent>
       </Card>
     </div>
