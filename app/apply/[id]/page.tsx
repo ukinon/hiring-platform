@@ -7,7 +7,7 @@ import { JOBS_QUERY_KEYS } from "@/lib/query-keys";
 import { getJob } from "@/services";
 import ApplyClientPage from "./client-page";
 
-export default async function LeadDetailsPage({
+export default async function ApplyPage({
   params,
 }: {
   params: Promise<{ id: string }>;

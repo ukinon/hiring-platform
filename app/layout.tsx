@@ -23,11 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${nunitoSans.variable}  max-w-7xl mx-auto antialiased`}>
-        <TopBar />
         <ReactQueryClientProvider>
+          <TopBar />
           <div className="mt-[8vh]">{children}</div>
+          <Toaster richColors />
         </ReactQueryClientProvider>
-        <Toaster />
       </body>
     </html>
   );

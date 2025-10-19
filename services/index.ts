@@ -1,5 +1,14 @@
 import { createClient } from "@/lib/supabase/client";
 
+export async function getCurrentUser() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    throw error;
+  }
+  return data.user;
+}
+
 export async function getJobs() {
   const supabase = await createClient();
   const { data, error } = await supabase.from("jobs").select("*");

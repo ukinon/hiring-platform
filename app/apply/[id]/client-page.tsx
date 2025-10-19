@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useJobDetail } from "@/hooks/react-queries";
 import { ArrowLeft } from "lucide-react";
 import React from "react";
@@ -28,13 +29,42 @@ export default function ApplyClientPage({ id }: { id: string }) {
   if (!data) {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center h-[92vh] w-full overflow-hidden">
-          <span className="size-12 text-primary ">Loading...</span>
+        <div className="flex items-center justify-center w-full overflow-hidden py-[2vh]">
+          <Card className="w-[700px] h-[88vh] relative">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div className="flex gap-4 items-center">
+                  <Skeleton className="h-10 w-10 rounded-md" />
+                  <Skeleton className="h-6 w-64" />
+                </div>
+                <Skeleton className="h-5 w-48" />
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <Skeleton className="h-4 w-32" />
+
+              {/* Photo profile skeleton */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-32 w-32 rounded-full" />
+                <Skeleton className="h-10 w-36 rounded-md" />
+              </div>
+
+              {/* Form fields skeleton */}
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-12 w-full rounded-md" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
       );
     }
 
-    if (!data && !isLoading) {
+    if (!isLoading) {
       return <ApplyEmptyPage />;
     }
 
@@ -66,7 +96,7 @@ export default function ApplyClientPage({ id }: { id: string }) {
           </EmptyTitle>
           <EmptyDescription className="text-l-regular w-full">
             {
-              "   Congratulations! You've taken the first step towards a rewarding career at Rakamin. We look forward to learning more about you during the application process."
+              "Congratulations! You've taken the first step towards a rewarding career at Rakamin. We look forward to learning more about you during the application process."
             }
           </EmptyDescription>
         </EmptyContent>

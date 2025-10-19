@@ -22,7 +22,7 @@ import {
 export type ComboboxItem = {
   value: string;
   label: string;
-  keywords?: string[]; // extra searchable terms
+  keywords?: string[];
 };
 
 type LoadMoreFunction = (page: number) => Promise<ComboboxItem[]>;

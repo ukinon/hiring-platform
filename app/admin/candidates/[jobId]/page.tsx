@@ -3,29 +3,34 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import IndexClientPage from "./client-page";
-import { JOBS_QUERY_KEYS } from "@/lib/query-keys";
+import { CANDIDATE_QUERY_KEYS } from "@/lib/query-keys";
 import { SearchParams } from "@/types";
-import { getJobs } from "@/services";
+import { getCandidates } from "@/services/admin";
+import CandidatesClientPage from "./client-page";
 
-export default async function IndexPage({
+export default async function AdminPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ jobId: string }>;
   searchParams: Promise<SearchParams>;
 }) {
+  const { jobId } = await params;
   const query = await searchParams;
   const queryString = Object.entries(query)
     .map(([key, value]) => `${key}=${value}`)
     .join("&");
+
   const queryClient = new QueryClient();
+
   await queryClient.prefetchQuery({
-    queryKey: JOBS_QUERY_KEYS.list(queryString),
-    queryFn: () => getJobs(),
+    queryKey: CANDIDATE_QUERY_KEYS.list(jobId, queryString),
+    queryFn: () => getCandidates(jobId),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <IndexClientPage />
+      <CandidatesClientPage jobId={jobId} />
     </HydrationBoundary>
   );
 }
