@@ -1,4 +1,4 @@
-import CreateJobButton from "@/components/admin/create-job-button";
+import CreateJobBDialog from "@/components/admin/create-job-dialog";
 import {
   Empty,
   EmptyContent,
@@ -30,7 +30,7 @@ export default function AdminEmptyPage() {
         <EmptyDescription className="text-l-regular">
           Create a job opening now and start the candidate process.
         </EmptyDescription>
-        <CreateJobButton />
+        <CreateJobBDialog />
       </EmptyContent>
     </Empty>
   );

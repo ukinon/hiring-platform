@@ -26,7 +26,7 @@ export default function RootLayout({
         <ReactQueryClientProvider>
           <TopBar />
           <div className="mt-[8vh]">{children}</div>
-          <Toaster richColors />
+          <Toaster richColors position="bottom-left" />
         </ReactQueryClientProvider>
       </body>
     </html>

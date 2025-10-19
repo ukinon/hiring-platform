@@ -8,9 +8,15 @@ import CreateJobCTA from "@/components/admin/create-job-cta";
 import SearchInput from "@/components/search-input";
 import FilterInput from "@/components/filter-input";
 import AdminJobCard from "@/components/admin/admin-job-card";
+import Paginator from "@/components/paginator";
 
 export default function AdminClientPage() {
-  const { data: jobs, isLoading } = useJobs();
+  const { data: jobsData, isLoading } = useJobs();
+
+  const jobs = jobsData?.data || [];
+  const totalPages = jobsData?.totalPages || 1;
+  const total = jobsData?.total || 0;
+  const currentPage = jobsData?.page || 1;
 
   if (isLoading) {
     return (
@@ -37,9 +43,9 @@ export default function AdminClientPage() {
   }
 
   return (
-    <div className="grid grid-cols-6 gap-1">
-      <div className="col-span-4 p-3">
-        <div className="flex gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-7 sm:gap-1">
+      <div className="order-2 sm:order-1 sm:col-span-5 p-3 flex flex-col">
+        <div className="flex gap-2 mb-3">
           <SearchInput placeholder="Search by job details" />
           <FilterInput
             options={[
@@ -53,14 +59,24 @@ export default function AdminClientPage() {
           />
         </div>
         {(!jobs || jobs.length === 0) && !isLoading && <AdminEmptyPage />}
-        <ScrollArea className="h-[80vh] py-3">
+        <ScrollArea className="flex-1 h-[calc(80vh-8rem)]">
           {jobs?.map((job) => (
             <AdminJobCard key={job.id} job={job} />
           ))}
         </ScrollArea>
+        {totalPages > 1 && (
+          <div className="mt-4">
+            <Paginator
+              currentPage={currentPage}
+              totalPages={totalPages}
+              total={total}
+              data={jobs}
+            />
+          </div>
+        )}
       </div>
 
-      <div className="col-span-2 h-[92vh] flex items-start justify-start p-2">
+      <div className="order-1 sm:order-2 sm:col-span-2 flex items-start justify-start p-2">
         <CreateJobCTA />
       </div>
     </div>

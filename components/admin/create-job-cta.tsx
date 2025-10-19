@@ -2,12 +2,12 @@
 
 import React from "react";
 import { Card, CardContent } from "../ui/card";
-import CreateJobButton from "./create-job-button";
 import Image from "next/image";
+import CreateJobBDialog from "./create-job-dialog";
 
 export default function CreateJobCTA() {
   return (
-    <Card className="relative overflow-hidden border-primary/20">
+    <Card className="w-full relative overflow-hidden border-primary/20">
       <div className="absolute inset-0 z-0">
         <Image
           src="/assets/cta-background.jpg"
@@ -28,7 +28,7 @@ export default function CreateJobCTA() {
           </p>
         </div>
 
-        <CreateJobButton variant="default" className="w-full" />
+        <CreateJobBDialog variant="default" className="w-full" />
       </CardContent>
     </Card>
   );

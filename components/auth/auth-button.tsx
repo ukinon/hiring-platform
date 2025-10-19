@@ -52,7 +52,7 @@ export default function AuthButton() {
             <Button>Employer Portal</Button>
           </DialogTrigger>
 
-          <DialogContent>
+          <DialogContent className="w-[50vw]">
             <DialogTitle>Employer Login</DialogTitle>
             <LoginForm />
           </DialogContent>

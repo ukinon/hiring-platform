@@ -17,6 +17,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import Image from "next/image";
+import Paginator from "@/components/paginator";
 
 const columns: ColumnDef<Candidate>[] = [
   {
@@ -107,9 +108,14 @@ const columns: ColumnDef<Candidate>[] = [
 ];
 
 export default function CandidatesClientPage({ jobId }: { jobId: string }) {
-  const { data: candidates, isLoading } = useCandidates(jobId);
+  const { data: candidatesData, isLoading } = useCandidates(jobId);
 
-  if (!candidates) {
+  const candidates = candidatesData?.candidates || [];
+  const totalPages = candidatesData?.totalPages || 1;
+  const total = candidatesData?.total || 0;
+  const currentPage = candidatesData?.page || 1;
+
+  if (!candidatesData) {
     if (isLoading) {
       return (
         <div className="grid grid-cols-3 gap-4">
@@ -150,10 +156,10 @@ export default function CandidatesClientPage({ jobId }: { jobId: string }) {
 
   return (
     <div className="flex flex-col px-6 py-4 space-y-4">
-      <h1 className="text-xl-bold">{candidates?.jobs.title}</h1>
+      <h1 className="text-xl-bold">{candidatesData?.jobs.title}</h1>
 
       <div className="border rounded-lg p-5">
-        {(!candidates || candidates.candidates.length === 0) && (
+        {(!candidates || candidates.length === 0) && (
           <Empty>
             <EmptyHeader>
               <EmptyMedia>
@@ -176,14 +182,26 @@ export default function CandidatesClientPage({ jobId }: { jobId: string }) {
           </Empty>
         )}
 
-        {candidates && candidates.candidates.length > 0 && (
-          <DataTable
-            columns={columns}
-            data={candidates?.candidates || []}
-            enableSelection={true}
-            showSearch={true}
-            isLoading={isLoading}
-          />
+        {candidates && candidates.length > 0 && (
+          <>
+            <DataTable
+              columns={columns}
+              data={candidates || []}
+              enableSelection={true}
+              showSearch={true}
+              isLoading={isLoading}
+            />
+            {totalPages > 1 && (
+              <div className="mt-4">
+                <Paginator
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  total={total}
+                  data={candidates}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

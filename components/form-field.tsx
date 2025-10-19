@@ -23,6 +23,7 @@ interface FormFieldProps<
   name: TName;
   label?: string;
   description?: string;
+  required?: boolean;
   children: (
     field: ControllerRenderProps<TFieldValues, TName>,
     fieldState: ControllerFieldState
@@ -36,6 +37,7 @@ export default function FormField<
   control,
   name,
   label,
+  required,
   description,
   children,
 }: FormFieldProps<TFieldValues, TName>) {
@@ -45,7 +47,18 @@ export default function FormField<
       name={name}
       render={({ field, fieldState }) => (
         <FormItem>
-          {label && <FormLabel>{label}</FormLabel>}
+          {label && (
+            <div className="flex items-start gap-1">
+              <label htmlFor={name} className="text-s-regular">
+                {label}
+              </label>
+              {required && (
+                <span className="text-destructive h-fit flex items-start">
+                  *
+                </span>
+              )}
+            </div>
+          )}
           <FormControl>{children(field, fieldState)}</FormControl>
           {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
