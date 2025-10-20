@@ -754,7 +754,10 @@ export function DataTable<TData, TValue>({
                               draggable
                               onDragStart={(e) => {
                                 handleDragStart(e, header.column.id);
-                                e.dataTransfer.setData("text/plain", header.column.id);
+                                e.dataTransfer.setData(
+                                  "text/plain",
+                                  header.column.id
+                                );
                               }}
                               onDragEnd={handleDragEnd}
                               className="cursor-grab text-muted-foreground flex items-center"
