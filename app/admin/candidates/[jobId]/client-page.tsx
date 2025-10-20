@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/empty";
 import Image from "next/image";
 import Paginator from "@/components/paginator";
+import { useSearchParams } from "next/navigation";
 
 const columns: ColumnDef<Candidate>[] = [
   {
@@ -109,6 +110,7 @@ const columns: ColumnDef<Candidate>[] = [
 
 export default function CandidatesClientPage({ jobId }: { jobId: string }) {
   const { data: candidatesData, isLoading } = useCandidates(jobId);
+  const searchParams = useSearchParams();
 
   const candidates = candidatesData?.candidates || [];
   const totalPages = candidatesData?.totalPages || 1;
@@ -158,51 +160,55 @@ export default function CandidatesClientPage({ jobId }: { jobId: string }) {
     <div className="flex flex-col px-6 py-4 space-y-4">
       <h1 className="text-xl-bold">{candidatesData?.jobs.title}</h1>
 
-      <div className="border rounded-lg p-5">
-        {(!candidates || candidates.length === 0) && (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia>
-                <Image
-                  width={260}
-                  height={260}
-                  src="/assets/candidates-empty.png"
-                  alt="Empty State"
-                />
-              </EmptyMedia>
-            </EmptyHeader>
-            <EmptyContent>
-              <EmptyTitle className="heading-s-bold">
-                No candidates found
-              </EmptyTitle>
-              <EmptyDescription className="text-l-regular">
-                Share your job vacancies so that more candidates will apply.{" "}
-              </EmptyDescription>
-            </EmptyContent>
-          </Empty>
-        )}
+      <div className="border rounded-lg p-5 min-h-[78vh]">
+        {candidates.length === 0 &&
+          !isLoading &&
+          !searchParams.get("search") && (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia>
+                  <Image
+                    width={260}
+                    height={260}
+                    src="/assets/candidates-empty.png"
+                    alt="Empty State"
+                  />
+                </EmptyMedia>
+              </EmptyHeader>
+              <EmptyContent>
+                <EmptyTitle className="heading-s-bold">
+                  No candidates found
+                </EmptyTitle>
+                <EmptyDescription className="text-l-regular">
+                  Share your job vacancies so that more candidates will apply.{" "}
+                </EmptyDescription>
+              </EmptyContent>
+            </Empty>
+          )}
 
-        {candidates && candidates.length > 0 && (
-          <>
-            <DataTable
-              columns={columns}
-              data={candidates || []}
-              enableSelection={true}
-              showSearch={true}
-              isLoading={isLoading}
-            />
-            {totalPages > 1 && (
-              <div className="mt-4">
-                <Paginator
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  total={total}
-                  data={candidates}
-                />
-              </div>
-            )}
-          </>
-        )}
+        {(candidates.length > 0 ||
+          (candidates.length === 0 && searchParams.get("search"))) &&
+          !isLoading && (
+            <>
+              <DataTable
+                columns={columns}
+                data={candidates || []}
+                enableSelection={true}
+                showSearch={true}
+                isLoading={isLoading}
+              />
+              {totalPages > 1 && (
+                <div className="mt-4">
+                  <Paginator
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    total={total}
+                    data={candidates}
+                  />
+                </div>
+              )}
+            </>
+          )}
       </div>
     </div>
   );

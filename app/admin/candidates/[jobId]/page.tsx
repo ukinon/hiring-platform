@@ -16,15 +16,13 @@ export default async function AdminPage({
   searchParams: Promise<SearchParams>;
 }) {
   const { jobId } = await params;
-  const query = await searchParams;
-  const queryString = Object.entries(query)
-    .map(([key, value]) => `${key}=${value}`)
-    .join("&");
+
+  const { ...queryParams } = await searchParams;
 
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: CANDIDATE_QUERY_KEYS.list(jobId, queryString),
+    queryKey: CANDIDATE_QUERY_KEYS.list(jobId, queryParams),
     queryFn: () => getCandidates(jobId),
   });
 

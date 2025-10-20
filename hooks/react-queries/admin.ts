@@ -7,9 +7,7 @@ import { toast } from "sonner";
 
 export function useCandidates(jobId: string) {
   const searchParams = useSearchParams();
-  const queryString = searchParams.toString();
 
-  // Parse search params
   const page = searchParams.get("page")
     ? parseInt(searchParams.get("page") || "1", 10)
     : 1;
@@ -20,6 +18,15 @@ export function useCandidates(jobId: string) {
   const sort = searchParams.get("sort") || undefined;
   const order = (searchParams.get("order") as "asc" | "desc") || undefined;
 
+  const params = {
+    page,
+    limit,
+    search,
+    status,
+    sort,
+    order,
+  };
+
   return useQuery({
     queryFn: () =>
       getCandidates(jobId, {
@@ -29,7 +36,7 @@ export function useCandidates(jobId: string) {
         sort,
         order,
       }),
-    queryKey: CANDIDATE_QUERY_KEYS.list(jobId, queryString),
+    queryKey: CANDIDATE_QUERY_KEYS.list(jobId, params),
   });
 }
 

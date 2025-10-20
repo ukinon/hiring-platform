@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { SearchParams } from "@/types";
 
 export async function getCurrentUser() {
   const supabase = await createClient();
@@ -9,14 +10,12 @@ export async function getCurrentUser() {
   return data.user;
 }
 
-export async function getJobs(params?: {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-  sort?: string;
-  order?: "asc" | "desc";
-}) {
+export async function getJobs(params?: SearchParams) {
+  console.log(
+    "=== getJobs called with params:",
+    JSON.stringify(params, null, 2)
+  );
+
   const supabase = await createClient();
   const page = params?.page || 1;
   const limit = params?.limit || 10;
@@ -25,29 +24,45 @@ export async function getJobs(params?: {
 
   let query = supabase.from("jobs").select("*", { count: "exact" });
 
-  if (params?.search) {
-    query = query.or(
-      `title.ilike.%${params.search}%,description.ilike.%${params.search}%,type.ilike.%${params.search}%`
-    );
-  }
-
+  // Apply status filter first
   if (params?.status) {
+    console.log("Applying status filter:", params.status);
     query = query.eq("status", params.status);
   }
 
+  // Apply search filter using case-insensitive partial match
+  if (params?.search && params.search.trim() !== "") {
+    const searchTerm = params.search.trim();
+    console.log("Applying search filter with term:", searchTerm);
+    query = query.ilike("title", `%${searchTerm}%`);
+  } else {
+    console.log("NO search filter applied. params.search:", params?.search);
+  }
+
+  // Apply sorting
   if (params?.sort) {
     query = query.order(params.sort, {
       ascending: params.order === "asc",
     });
   } else {
+    // Default sorting by created_at
     query = query.order("created_at", { ascending: false });
   }
 
+  // Apply pagination
   query = query.range(from, to);
 
   const { data, error, count } = await query;
 
+  console.log("=== Query result:", {
+    dataLength: data?.length,
+    total: count,
+    hasError: !!error,
+    firstJobTitle: data?.[0]?.title,
+  });
+
   if (error) {
+    console.error("Supabase query error:", error);
     throw error;
   }
 

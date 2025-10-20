@@ -5,31 +5,37 @@ import { useSearchParams } from "next/navigation";
 
 export function useJobs() {
   const searchParams = useSearchParams();
-  const queryString = searchParams.toString();
 
-  // Parse search params
   const page = searchParams.get("page")
     ? parseInt(searchParams.get("page") || "1", 10)
     : 1;
   const limit = searchParams.get("limit")
     ? parseInt(searchParams.get("limit") || "10", 10)
     : 10;
-  const search = searchParams.get("search") || undefined;
+  const search = searchParams.get("search")
+    ? decodeURIComponent(searchParams.get("search") || "")
+    : undefined;
   const status = searchParams.get("status") || undefined;
   const sort = searchParams.get("sort") || undefined;
   const order = (searchParams.get("order") as "asc" | "desc") || undefined;
 
+  const params = {
+    page,
+    limit,
+    search,
+    status,
+    sort,
+    order,
+  };
+
+  console.log("useJobs hook - parsed params:", params);
+
   return useQuery({
-    queryFn: () =>
-      getJobs({
-        page,
-        limit,
-        search,
-        status,
-        sort,
-        order,
-      }),
-    queryKey: JOBS_QUERY_KEYS.list(queryString),
+    queryFn: () => {
+      console.log("Calling getJobs with:", params);
+      return getJobs(params);
+    },
+    queryKey: JOBS_QUERY_KEYS.list(params),
   });
 }
 

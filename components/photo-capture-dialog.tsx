@@ -3,12 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import Webcam from "react-webcam";
-import * as handpose from "@tensorflow-models/handpose";
-import "@tensorflow/tfjs-core";
-import "@tensorflow/tfjs-converter";
-import "@tensorflow/tfjs-backend-webgl";
+import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
 import Image from "next/image";
 
 interface PhotoCaptureDialogProps {
@@ -47,20 +44,30 @@ const INITIAL_DETECTION_STATE: DetectionState = {
   timestamp: 0,
 };
 
-function detectHandGesture(predictions: handpose.AnnotatedPrediction[]): {
+interface MediaPipeHandResult {
+  landmarks: Array<{ x: number; y: number; z: number }>;
+  worldLandmarks: Array<{ x: number; y: number; z: number }>;
+  handedness: string;
+}
+
+function detectHandGesture(
+  hands: MediaPipeHandResult[],
+  videoWidth: number,
+  videoHeight: number
+): {
   gesture: string | null;
   position: HandPosition | null;
 } {
-  if (!predictions || predictions.length === 0) {
+  if (!hands || hands.length === 0) {
     return { gesture: null, position: null };
   }
 
   let bestMatch: {
     gesture: string;
-    hand: handpose.AnnotatedPrediction;
+    hand: MediaPipeHandResult;
   } | null = null;
 
-  for (const hand of predictions) {
+  for (const hand of hands) {
     const landmarks = hand.landmarks;
 
     const indexTip = landmarks[8];
@@ -73,8 +80,10 @@ function detectHandGesture(predictions: handpose.AnnotatedPrediction[]): {
     const ringBase = landmarks[14];
     const pinkyBase = landmarks[18];
 
-    const isFingerExtended = (tip: number[], base: number[]) =>
-      tip[1] < base[1];
+    const isFingerExtended = (
+      tip: { x: number; y: number; z: number },
+      base: { x: number; y: number; z: number }
+    ) => tip.y < base.y;
 
     const indexExtended = isFingerExtended(indexTip, indexBase);
     const middleExtended = isFingerExtended(middleTip, middleBase);
@@ -113,9 +122,12 @@ function detectHandGesture(predictions: handpose.AnnotatedPrediction[]): {
 
   const landmarks = bestMatch.hand.landmarks;
 
-  const handLandmarks = landmarks.slice(0, 21);
-  const xCoords = handLandmarks.map((point) => point[0]);
-  const yCoords = handLandmarks.map((point) => point[1]);
+  const xCoords = landmarks.map(
+    (point: { x: number; y: number; z: number }) => point.x * videoWidth
+  );
+  const yCoords = landmarks.map(
+    (point: { x: number; y: number; z: number }) => point.y * videoHeight
+  );
 
   const minX = Math.min(...xCoords);
   const maxX = Math.max(...xCoords);
@@ -253,7 +265,7 @@ export default function PhotoCaptureDialog({
   onCapture,
 }: PhotoCaptureDialogProps) {
   const webcamRef = useRef<Webcam>(null);
-  const modelRef = useRef<handpose.HandPose | null>(null);
+  const modelRef = useRef<HandLandmarker | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const lastDetectionRef = useRef<DetectionState>({
     ...INITIAL_DETECTION_STATE,
@@ -276,11 +288,27 @@ export default function PhotoCaptureDialog({
 
   const loadModel = useCallback(async () => {
     try {
-      const model = await handpose.load();
-      modelRef.current = model;
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+      );
+
+      const handLandmarker = await HandLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+          delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        numHands: 2,
+        minHandDetectionConfidence: 0.5,
+        minHandPresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      });
+
+      modelRef.current = handLandmarker;
       setIsModelLoaded(true);
     } catch (error) {
-      console.error("Error loading handpose model:", error);
+      console.error("Error loading MediaPipe hand detection model:", error);
     }
   }, []);
 
@@ -293,10 +321,28 @@ export default function PhotoCaptureDialog({
         modelRef.current
       ) {
         const video = webcamRef.current.video;
-        const predictions = await modelRef.current.estimateHands(video);
-        const detection = detectHandGesture(predictions);
         const now =
           typeof performance !== "undefined" ? performance.now() : Date.now();
+
+        const results = modelRef.current.detectForVideo(video, now);
+
+        const hands: MediaPipeHandResult[] = [];
+        if (results.landmarks && results.landmarks.length > 0) {
+          for (let i = 0; i < results.landmarks.length; i++) {
+            hands.push({
+              landmarks: results.landmarks[i],
+              worldLandmarks: results.worldLandmarks?.[i] || [],
+              handedness:
+                results.handedness?.[i]?.[0]?.categoryName || "Unknown",
+            });
+          }
+        }
+
+        const detection = detectHandGesture(
+          hands,
+          video.videoWidth,
+          video.videoHeight
+        );
 
         const { pose, position, nextDetection } = resolveDetection({
           detection,
@@ -454,139 +500,148 @@ export default function PhotoCaptureDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-heading-m-bold">
             Raise Your Hand to Capture
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <p className="text-m-regular text-neutral-70">
-            {capturedImage
-              ? "Review your photo and confirm or retake."
-              : !isModelLoaded
-              ? "Loading hand detection model..."
-              : "We'll take the photo once your hand pose is detected."}
-          </p>
+        {!isModelLoaded && (
+          <div className="flex items-center justify-center h-48">
+            <p className="text-m-regular text-neutral-70">
+              <Loader2 className="inline-block mr-2 text-primary animate-spin" />
+              Loading hand detection model...
+            </p>
+          </div>
+        )}
 
-          <div className="relative aspect-video bg-neutral-20 rounded-lg overflow-hidden">
-            {!capturedImage ? (
-              <>
-                <Webcam
-                  ref={webcamRef}
-                  audio={false}
-                  screenshotFormat="image/jpeg"
-                  videoConstraints={{
-                    facingMode: "user",
-                    width: 1280,
-                    height: 720,
-                  }}
-                  onUserMedia={() => setIsReady(true)}
+        {isModelLoaded && (
+          <div className="space-y-4">
+            <p className="text-m-regular text-neutral-70">
+              {capturedImage
+                ? "Review your photo."
+                : "We'll take the photo once your hand pose is detected."}
+            </p>
+
+            <div className="relative aspect-video bg-neutral-20 rounded-lg overflow-hidden">
+              {!capturedImage ? (
+                <>
+                  <Webcam
+                    ref={webcamRef}
+                    audio={false}
+                    screenshotFormat="image/jpeg"
+                    videoConstraints={{
+                      facingMode: "user",
+                      width: 1280,
+                      height: 720,
+                    }}
+                    onUserMedia={() => setIsReady(true)}
+                    className="w-full h-full object-cover"
+                    mirrored
+                  />
+
+                  {countdown !== null ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
+                      <p className="text-white text-m-regular mb-2">
+                        Capturing photo in
+                      </p>
+                      <p className="text-white text-[120px] font-bold leading-none">
+                        {countdown}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {handPosition && (
+                        <>
+                          <div
+                            className="absolute border-[2px] rounded-lg pointer-events-none transition-all duration-150"
+                            style={{
+                              left: `${handPosition.x}px`,
+                              top: `${handPosition.y}px`,
+                              width: `${handPosition.width}px`,
+                              height: `${handPosition.height}px`,
+                              borderColor:
+                                detectedPose === currentPose
+                                  ? "var(--success)"
+                                  : "var(--danger)",
+                            }}
+                          />
+                          <div
+                            className="absolute px-2 py-1 rounded text-white text-xs font-semibold transition-all duration-150 whitespace-nowrap"
+                            style={{
+                              left: `${handPosition.x}px`,
+                              top: `${Math.max(handPosition.y - 25, 0)}px`,
+                              backgroundColor:
+                                detectedPose === currentPose
+                                  ? "var(--success)"
+                                  : "var(--danger)",
+                            }}
+                          >
+                            {detectedPose === currentPose ? (
+                              <>
+                                {currentPose === "pose1" && "Pose 3"}
+                                {currentPose === "pose2" && "Pose 2"}
+                                {currentPose === "pose3" && "Pose 1"}
+                              </>
+                            ) : (
+                              "Undetected"
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <Image
+                  src={capturedImage}
+                  alt="Captured"
+                  width={1280}
+                  height={720}
                   className="w-full h-full object-cover"
-                  mirrored
                 />
+              )}
+            </div>
 
-                {countdown !== null ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
-                    <p className="text-white text-m-regular mb-2">
-                      Capturing photo in
-                    </p>
-                    <p className="text-white text-[120px] font-bold leading-none">
-                      {countdown}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {handPosition && (
-                      <>
-                        <div
-                          className="absolute border-[2px] rounded-lg pointer-events-none transition-all duration-150"
-                          style={{
-                            left: `${handPosition.x}px`,
-                            top: `${handPosition.y}px`,
-                            width: `${handPosition.width}px`,
-                            height: `${handPosition.height}px`,
-                            borderColor:
-                              detectedPose === currentPose
-                                ? "var(--success)"
-                                : "var(--danger)",
-                          }}
+            {!capturedImage && (
+              <div>
+                <p className="text-m-regular mb-4">
+                  To take a picture, follow the hand poses in the order shown
+                  below. The system will automatically capture the image once
+                  the final pose is detected.
+                </p>
+                <div className="flex items-center justify-center gap-4">
+                  {HAND_POSES.map((pose, index) => (
+                    <div key={pose.id} className="flex items-center gap-4">
+                      <div className="flex flex-col items-center justify-center w-20 h-20 bg-neutral-20 rounded-lg p-2">
+                        <Image
+                          src={pose.image}
+                          alt={pose.label}
+                          width={64}
+                          height={64}
+                          className="object-contain"
                         />
-                        <div
-                          className="absolute px-2 py-1 rounded text-white text-xs font-semibold transition-all duration-150 whitespace-nowrap"
-                          style={{
-                            left: `${handPosition.x}px`,
-                            top: `${Math.max(handPosition.y - 25, 0)}px`,
-                            backgroundColor:
-                              detectedPose === currentPose
-                                ? "var(--success)"
-                                : "var(--danger)",
-                          }}
-                        >
-                          {detectedPose === currentPose ? (
-                            <>
-                              {currentPose === "pose1" && "Pose 3"}
-                              {currentPose === "pose2" && "Pose 2"}
-                              {currentPose === "pose3" && "Pose 1"}
-                            </>
-                          ) : (
-                            "Undetected"
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-              </>
-            ) : (
-              <Image
-                src={capturedImage}
-                alt="Captured"
-                width={1280}
-                height={720}
-                className="w-full h-full object-cover"
-              />
+                      </div>
+                      {index < HAND_POSES.length - 1 && (
+                        <ChevronRight className="w-6 h-6 text-neutral-50" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {capturedImage && (
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={handleRetake}>
+                  Retake Photo
+                </Button>
+                <Button onClick={handleConfirm}>Submit</Button>
+              </div>
             )}
           </div>
-
-          {!capturedImage && (
-            <div>
-              <p className="text-m-regular mb-4">
-                To take a picture, follow the hand poses in the order shown
-                below. The system will automatically capture the image once the
-                final pose is detected.
-              </p>
-              <div className="flex items-center justify-center gap-4">
-                {HAND_POSES.map((pose, index) => (
-                  <div key={pose.id} className="flex items-center gap-4">
-                    <div className="flex flex-col items-center justify-center w-20 h-20 bg-neutral-20 rounded-lg p-2">
-                      <Image
-                        src={pose.image}
-                        alt={pose.label}
-                        width={64}
-                        height={64}
-                        className="object-contain"
-                      />
-                    </div>
-                    {index < HAND_POSES.length - 1 && (
-                      <ChevronRight className="w-6 h-6 text-neutral-50" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {capturedImage && (
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={handleRetake}>
-                Retake
-              </Button>
-              <Button onClick={handleConfirm}>Confirm</Button>
-            </div>
-          )}
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

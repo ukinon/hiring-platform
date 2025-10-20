@@ -33,9 +33,7 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
-      // Clear the current user data immediately
       queryClient.setQueryData(["currentUser"], null);
-      // Invalidate to refetch (will return null/undefined)
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       router.push("/");
     },

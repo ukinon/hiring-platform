@@ -13,29 +13,34 @@ import { Job } from "@/types";
 import React from "react";
 import { BriefcaseIcon } from "@heroicons/react/24/outline";
 import JobCard from "@/components/job/job-card";
-import IndexEmptyPage from "./empty-page";
 import JobDetail from "@/components/job/job-detail";
 import SearchInput from "@/components/search-input";
 import Paginator from "@/components/paginator";
+import { useSearchParams } from "next/navigation";
+import IndexEmptyPage from "./empty-page";
 
 export default function IndexClientPage() {
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
   const { data: jobsData, isLoading } = useJobs();
+  const searchParams = useSearchParams();
 
   const jobs = jobsData?.data || [];
   const totalPages = jobsData?.totalPages || 1;
   const total = jobsData?.total || 0;
   const currentPage = jobsData?.page || 1;
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-3 gap-4">
-        <div className="h-[92vh] p-4">
-          <div className="mb-4">
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <ScrollArea className="h-[calc(92vh-8rem)]">
-            <div className="space-y-3">
+  if (!isLoading && jobs.length === 0 && !searchParams.get("search")) {
+    return <IndexEmptyPage />;
+  }
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <div className="h-[92vh] p-4 flex flex-col">
+        <div className="mb-4">
+          <SearchInput placeholder="Search jobs..." />
+        </div>
+        <ScrollArea className="flex-1">
+          {isLoading && (
+            <>
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
@@ -50,44 +55,33 @@ export default function IndexClientPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </ScrollArea>
-        </div>
+            </>
+          )}
 
-        <div className="col-span-2 h-[92vh] flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl space-y-4">
-            <Skeleton className="h-8 w-2/3" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-4/6" />
-            <div className="pt-4 space-y-2">
-              <Skeleton className="h-10 w-32" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+          {!isLoading && jobs.length === 0 && searchParams.get("search") && (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia>
+                  <BriefcaseIcon className="w-16 h-16 text-muted-foreground" />
+                </EmptyMedia>
+                <EmptyTitle>No jobs found</EmptyTitle>
+                <EmptyDescription>
+                  Try adjusting your search terms or filters to find what
+                  you&apos;re looking for.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
 
-  if ((!jobs || jobs.length === 0) && !isLoading) {
-    return <IndexEmptyPage />;
-  }
-
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      <div className="h-[92vh] p-4 flex flex-col">
-        <div className="mb-4">
-          <SearchInput placeholder="Search jobs..." />
-        </div>
-        <ScrollArea className="flex-1">
-          {jobs?.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              selected={selectedJob === job}
-              onSelect={setSelectedJob}
-            />
-          ))}
+          {jobs.length > 0 &&
+            jobs?.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                selected={selectedJob === job}
+                onSelect={setSelectedJob}
+              />
+            ))}
         </ScrollArea>
         {totalPages > 1 && (
           <div className="mt-4">

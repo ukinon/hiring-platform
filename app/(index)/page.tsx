@@ -13,13 +13,11 @@ export default async function IndexPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const query = await searchParams;
-  const queryString = Object.entries(query)
-    .map(([key, value]) => `${key}=${value}`)
-    .join("&");
+  const { ...params } = await searchParams;
+
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
-    queryKey: JOBS_QUERY_KEYS.list(queryString),
+    queryKey: JOBS_QUERY_KEYS.list(params),
     queryFn: () => getJobs(),
   });
 

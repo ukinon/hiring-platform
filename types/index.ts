@@ -1,13 +1,14 @@
 import { Database, Tables } from "./database.types";
 
 export interface SearchParams {
-  page?: string;
+  page?: number;
   search?: string;
   sort?: string;
   order?: string;
-  limit?: string;
+  limit?: number;
   filter?: string;
   range?: string;
+  status?: string;
 }
 
 export type Job = Tables<"jobs">;
