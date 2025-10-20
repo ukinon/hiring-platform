@@ -17,8 +17,8 @@ export default function AdminClientPage() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-6 gap-1">
-        <div className="space-y-3 col-span-5">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-1">
+        <div className="space-y-3 md:col-span-5">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="p-4 rounded-lg space-y-3 bg-card">
               <Skeleton className="h-5 w-3/4" />
@@ -32,7 +32,7 @@ export default function AdminClientPage() {
           ))}
         </div>
 
-        <div className="col-span-2  flex items-start justify-start p-4">
+        <div className="hidden md:flex md:col-span-2 items-start justify-start p-4">
           <Skeleton className="h-32 w-32" />
         </div>
       </div>

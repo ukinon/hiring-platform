@@ -16,25 +16,34 @@ import JobCard from "@/components/job/job-card";
 import JobDetail from "@/components/job/job-detail";
 import SearchInput from "@/components/search-input";
 import Paginator from "@/components/paginator";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import IndexEmptyPage from "./empty-page";
 
 export default function IndexClientPage() {
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
   const { data: jobsData, isLoading } = useJobs();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const jobs = jobsData?.data || [];
   const totalPages = jobsData?.totalPages || 1;
   const total = jobsData?.total || 0;
   const currentPage = jobsData?.page || 1;
 
+  const handleJobSelect = (job: Job) => {
+    if (window.innerWidth < 1024) {
+      router.push(`/jobs/${job.id}`);
+    } else {
+      setSelectedJob(job);
+    }
+  };
+
   if (!isLoading && jobs.length === 0 && !searchParams.get("search")) {
     return <IndexEmptyPage />;
   }
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <div className="h-[92vh] p-4 flex flex-col">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="h-[92vh] p-2 md:p-4 flex flex-col">
         <div className="mb-4">
           <SearchInput placeholder="Search jobs..." />
         </div>
@@ -79,7 +88,7 @@ export default function IndexClientPage() {
                 key={job.id}
                 job={job}
                 selected={selectedJob === job}
-                onSelect={setSelectedJob}
+                onSelect={handleJobSelect}
               />
             ))}
         </ScrollArea>
@@ -95,7 +104,7 @@ export default function IndexClientPage() {
         )}
       </div>
 
-      <div className="col-span-2 h-[92vh] flex items-center p-4">
+      <div className="hidden lg:flex lg:col-span-2 h-[92vh] items-center p-2 md:p-4">
         {!selectedJob && (
           <Empty>
             <EmptyHeader>

@@ -47,10 +47,12 @@ export default function AuthButton() {
       {(!user || error) && (
         <Dialog>
           <DialogTrigger>
-            <Button>Employer Portal</Button>
+            <Button size="sm" className="text-xs sm:text-sm">
+              Employer Portal
+            </Button>
           </DialogTrigger>
 
-          <DialogContent className="w-[50vw]">
+          <DialogContent className="w-[95vw] sm:w-[90vw] md:w-[50vw] max-w-2xl">
             <DialogTitle>Employer Login</DialogTitle>
             <LoginForm />
           </DialogContent>

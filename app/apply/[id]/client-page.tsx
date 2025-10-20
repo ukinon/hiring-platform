@@ -29,29 +29,27 @@ export default function ApplyClientPage({ id }: { id: string }) {
   if (!data) {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center w-full overflow-hidden py-[2vh]">
-          <Card className="w-[700px] h-[88vh] relative">
+        <div className="flex items-center justify-center w-full overflow-hidden py-[2vh] px-2 md:px-4">
+          <Card className="w-full max-w-[700px] h-[88vh] relative">
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div className="flex gap-4 items-center">
                   <Skeleton className="h-10 w-10 rounded-md" />
-                  <Skeleton className="h-6 w-64" />
+                  <Skeleton className="h-6 w-32 sm:w-64" />
                 </div>
-                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-5 w-32 sm:w-48" />
               </div>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <Skeleton className="h-4 w-32" />
 
-              {/* Photo profile skeleton */}
               <div className="space-y-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-32 w-32 rounded-full" />
                 <Skeleton className="h-10 w-36 rounded-md" />
               </div>
 
-              {/* Form fields skeleton */}
               {[...Array(7)].map((_, i) => (
                 <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-28" />
@@ -105,11 +103,11 @@ export default function ApplyClientPage({ id }: { id: string }) {
   }
 
   return (
-    <div className="flex items-center justify-center w-full overflow-hidden py-[2vh]">
-      <Card className="w-[700px] h-[88vh] relative">
+    <div className="flex items-center justify-center w-full overflow-hidden py-[2vh] px-2 md:px-4">
+      <Card className="w-full max-w-[700px] h-[88vh] relative">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div className="flex gap-4 items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div className="flex gap-2 sm:gap-4 items-center">
               <Button
                 variant={"outline"}
                 size={"icon"}
@@ -118,10 +116,14 @@ export default function ApplyClientPage({ id }: { id: string }) {
                 <ArrowLeft />
               </Button>
 
-              <h1 className="text-xl-bold">Apply {data?.title} at Rakamin</h1>
+              <h1 className="text-base sm:text-xl-bold">
+                Apply {data?.title} at Rakamin
+              </h1>
             </div>
 
-            <p className="text-m-regular">ℹ️ This field required to fill</p>
+            <p className="text-xs sm:text-m-regular">
+              ℹ️ This field required to fill
+            </p>
           </div>
         </CardHeader>
 

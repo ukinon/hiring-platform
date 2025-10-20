@@ -120,8 +120,8 @@ export default function CandidatesClientPage({ jobId }: { jobId: string }) {
   if (!candidatesData) {
     if (isLoading) {
       return (
-        <div className="grid grid-cols-3 gap-4">
-          <ScrollArea className="h-[92vh] p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <ScrollArea className="h-[92vh] p-2 md:p-4">
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
                 <div
@@ -140,7 +140,7 @@ export default function CandidatesClientPage({ jobId }: { jobId: string }) {
             </div>
           </ScrollArea>
 
-          <div className="col-span-2 h-[92vh] flex items-center justify-center p-4">
+          <div className="hidden lg:flex lg:col-span-2 h-[92vh] items-center justify-center p-2 md:p-4">
             <div className="w-full max-w-2xl space-y-4">
               <Skeleton className="h-8 w-2/3" />
               <Skeleton className="h-4 w-full" />
@@ -157,10 +157,10 @@ export default function CandidatesClientPage({ jobId }: { jobId: string }) {
   }
 
   return (
-    <div className="flex flex-col px-6 py-4 space-y-4">
+    <div className="flex flex-col px-2 md:px-6 py-4 space-y-4">
       <h1 className="text-xl-bold">{candidatesData?.jobs.title}</h1>
 
-      <div className="border rounded-lg p-5 min-h-[78vh]">
+      <div className="border rounded-lg p-2 md:p-5 min-h-[78vh] overflow-x-auto">
         {candidates.length === 0 &&
           !isLoading &&
           !searchParams.get("search") && (

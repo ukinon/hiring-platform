@@ -334,12 +334,10 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          {/* Search */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
           {showSearch && (
-            <div className=" w-80">
+            <div className="w-full sm:w-80">
               <SearchInput />
             </div>
           )}
@@ -621,10 +619,9 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Bulk Actions Bar */}
       {enableSelection && selectedIds.length > 0 && (
-        <div className="flex items-center justify-between bg-muted/50 p-3 rounded-md">
-          <span className="text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-muted/50 p-3 rounded-md gap-2">
+          <span className="text-xs sm:text-sm text-muted-foreground">
             {selectedIds.length} row(s) selected
           </span>
           {onBulkDelete && (
@@ -633,7 +630,7 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={handleBulkDelete}
               disabled={isDeleting}
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
             >
               <Trash2 className="h-4 w-4" />
               {isDeleting ? "Deleting..." : "Delete Selected"}
@@ -642,11 +639,10 @@ export function DataTable<TData, TValue>({
         </div>
       )}
 
-      {/* Table */}
       {isLoading ? (
         <TableSkeleton columns={modifiedColumns.length} rows={5} />
       ) : (
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup, index) => (
@@ -656,6 +652,7 @@ export function DataTable<TData, TValue>({
                       <TableHead
                         key={header.id + index}
                         style={{ width: header.getSize() }}
+                        className="whitespace-nowrap"
                       >
                         {header.isPlaceholder
                           ? null
@@ -677,7 +674,10 @@ export function DataTable<TData, TValue>({
                     data-state={row.getIsSelected() && "selected"}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="truncate max-w-xs">
+                      <TableCell
+                        key={cell.id}
+                        className="truncate max-w-xs whitespace-nowrap"
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

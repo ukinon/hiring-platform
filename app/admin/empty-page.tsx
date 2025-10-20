@@ -20,14 +20,15 @@ export default function AdminEmptyPage() {
             height={300}
             src="/assets/empty-icon.png"
             alt="Empty State"
+            className="w-48 h-48 sm:w-64 sm:h-64 md:w-[300px] md:h-[300px]"
           />
         </EmptyMedia>
       </EmptyHeader>
       <EmptyContent>
-        <EmptyTitle className="heading-s-bold">
+        <EmptyTitle className="heading-s-bold text-base sm:text-lg">
           No job openings available
         </EmptyTitle>
-        <EmptyDescription className="text-l-regular">
+        <EmptyDescription className="text-l-regular text-sm sm:text-base">
           Create a job opening now and start the candidate process.
         </EmptyDescription>
         <CreateJobBDialog />

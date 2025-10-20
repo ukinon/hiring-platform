@@ -53,9 +53,9 @@ export default function Paginator({
   };
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
       <div className="flex items-center gap-2">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Showing {data.length} of {total} items
         </p>
       </div>
@@ -63,7 +63,7 @@ export default function Paginator({
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-7 w-7 sm:h-8 sm:w-8"
           onClick={() =>
             handlePageChange({
               page: currentPage - 1,
@@ -72,14 +72,14 @@ export default function Paginator({
           }
           disabled={currentPage <= 1}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
 
         {getPageNumbers().map((page, index) =>
           page === "..." ? (
             <span
               key={`ellipsis-${index}`}
-              className="px-2 text-muted-foreground"
+              className="px-1 sm:px-2 text-xs sm:text-sm text-muted-foreground"
             >
               ...
             </span>
@@ -88,7 +88,7 @@ export default function Paginator({
               key={`page-${page}`}
               variant={currentPage === page ? "default" : "outline"}
               size="sm"
-              className="h-8 w-8"
+              className="h-7 w-7 sm:h-8 sm:w-8 text-xs sm:text-sm"
               onClick={() =>
                 handlePageChange({
                   page: page as number,
@@ -104,7 +104,7 @@ export default function Paginator({
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-7 w-7 sm:h-8 sm:w-8"
           onClick={() =>
             handlePageChange({
               page: currentPage + 1,
@@ -113,7 +113,7 @@ export default function Paginator({
           }
           disabled={currentPage >= totalPages}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
       </div>
     </div>
