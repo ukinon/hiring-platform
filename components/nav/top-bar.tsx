@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
-import AuthButton from "../auth/auth-button";
+import AuthDialog from "../auth/auth-dialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -69,7 +69,7 @@ export default function TopBar() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <AuthButton />
+      <AuthDialog />
     </div>
   );
 }
