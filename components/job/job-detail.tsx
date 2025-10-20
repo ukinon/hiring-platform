@@ -24,7 +24,14 @@ export default function JobDetail({ selectedJob }: { selectedJob: Job }) {
                 {selectedJob.type}
               </Badge>
               <h1 className="text-base md:text-l-bold">{selectedJob.title}</h1>
-              <p className="text-sm md:text-m-regular">Rakamin</p>
+              <p className="text-sm md:text-m-regular">
+                {selectedJob.company || "Company Name"}
+              </p>
+              {selectedJob.department && (
+                <p className="text-xs text-muted-foreground">
+                  {selectedJob.department}
+                </p>
+              )}
             </div>
           </div>
 

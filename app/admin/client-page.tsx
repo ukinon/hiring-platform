@@ -41,7 +41,7 @@ export default function AdminClientPage() {
   return (
     <div>
       {(!jobs || jobs.length === 0) && <AdminEmptyPage />}
-      <ScrollArea className="flex-1 h-[calc(80vh-8rem)]">
+      <ScrollArea className="flex-1  h-[80vh]">
         {jobs?.map((job) => (
           <AdminJobCard key={job.id} job={job} />
         ))}

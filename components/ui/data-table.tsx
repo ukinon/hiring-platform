@@ -9,6 +9,7 @@ import {
   SortingState,
   useReactTable,
   Column,
+  ColumnOrderState,
 } from "@tanstack/react-table";
 import {
   ArrowUpDown,
@@ -17,6 +18,7 @@ import {
   Filter,
   Plus,
   ChevronUp,
+  GripVertical,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -164,6 +166,9 @@ export function DataTable<TData, TValue>({
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [activeFilterSection, setActiveFilterSection] = React.useState(0);
   const [filterSearch, setFilterSearch] = React.useState("");
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([]);
+  const [columnSizing, setColumnSizing] = React.useState({});
+  const [draggedColumn, setDraggedColumn] = React.useState<string | null>(null);
 
   // Handle URL parameters internally
   const pathname = usePathname();
@@ -272,6 +277,7 @@ export function DataTable<TData, TValue>({
       ),
       enableSorting: false,
       enableHiding: false,
+      enableResizing: false,
       size: 40,
     };
 
@@ -282,6 +288,8 @@ export function DataTable<TData, TValue>({
     data,
     columns: modifiedColumns,
     enableRowSelection: enableSelection,
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
     onSortingChange: enableSorting
@@ -303,6 +311,8 @@ export function DataTable<TData, TValue>({
         }
       : setSorting,
     onRowSelectionChange: setRowSelection,
+    onColumnOrderChange: setColumnOrder,
+    onColumnSizingChange: setColumnSizing,
     getRowId,
     manualSorting: enableSorting,
     state: {
@@ -312,6 +322,8 @@ export function DataTable<TData, TValue>({
           : sorting
         : undefined,
       rowSelection,
+      columnOrder,
+      columnSizing,
     },
   });
 
@@ -330,6 +342,64 @@ export function DataTable<TData, TValue>({
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  // Drag and drop handlers for column reordering
+  const handleDragStart = (e: React.DragEvent, columnId: string) => {
+    // Don't allow dragging the select column
+    if (columnId === "select") {
+      e.preventDefault();
+      return;
+    }
+    setDraggedColumn(columnId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
+    e.preventDefault();
+
+    // Don't allow dropping on the select column
+    if (targetColumnId === "select") {
+      setDraggedColumn(null);
+      return;
+    }
+
+    if (
+      !draggedColumn ||
+      draggedColumn === targetColumnId ||
+      draggedColumn === "select"
+    ) {
+      setDraggedColumn(null);
+      return;
+    }
+
+    const currentOrder = table.getState().columnOrder;
+    const allColumnIds = table.getAllLeafColumns().map((col) => col.id);
+    const orderToUse = currentOrder.length > 0 ? currentOrder : allColumnIds;
+
+    const draggedIndex = orderToUse.indexOf(draggedColumn);
+    const targetIndex = orderToUse.indexOf(targetColumnId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedColumn(null);
+      return;
+    }
+
+    const newOrder = [...orderToUse];
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedColumn);
+
+    setColumnOrder(newOrder);
+    setDraggedColumn(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedColumn(null);
   };
 
   return (
@@ -643,23 +713,81 @@ export function DataTable<TData, TValue>({
         <TableSkeleton columns={modifiedColumns.length} rows={5} />
       ) : (
         <div className="rounded-md border overflow-x-auto">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup, index) => (
                 <TableRow key={headerGroup.id + index}>
-                  {headerGroup.headers.map((header, index) => {
+                  {headerGroup.headers.map((header, headerIndex) => {
+                    const isSelectColumn = header.column.id === "select";
+                    const canReorder = !header.isPlaceholder && !isSelectColumn;
+                    const resizeHandler = header.getResizeHandler();
+
                     return (
                       <TableHead
-                        key={header.id + index}
-                        style={{ width: header.getSize() }}
-                        className="whitespace-nowrap"
+                        key={header.id + headerIndex}
+                        onDragOver={(e) => {
+                          if (canReorder) {
+                            handleDragOver(e);
+                          }
+                        }}
+                        onDrop={(e) => {
+                          if (canReorder) {
+                            handleDrop(e, header.column.id);
+                          }
+                        }}
+                        style={{
+                          width: header.getSize(),
+                          position: "relative",
+                          opacity: draggedColumn === header.column.id ? 0.5 : 1,
+                          cursor: "default",
+                        }}
+                        className={cn(
+                          "whitespace-nowrap transition-opacity",
+                          draggedColumn === header.column.id &&
+                            "bg-accent cursor-grabbing"
+                        )}
                       >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
+                        <div className="flex items-center gap-2">
+                          {canReorder && (
+                            <span
+                              data-drag-handle="true"
+                              draggable
+                              onDragStart={(e) => {
+                                handleDragStart(e, header.column.id);
+                                e.dataTransfer.setData("text/plain", header.column.id);
+                              }}
+                              onDragEnd={handleDragEnd}
+                              className="cursor-grab text-muted-foreground flex items-center"
+                            >
+                              <GripVertical className="h-4 w-4 flex-shrink-0" />
+                            </span>
+                          )}
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </div>
+                        {/* Column Resizer */}
+                        {header.column.getCanResize() && (
+                          <div
+                            data-resize-handle="true"
+                            draggable={false}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              resizeHandler(e);
+                            }}
+                            onTouchStart={(e) => {
+                              e.stopPropagation();
+                              resizeHandler(e);
+                            }}
+                            className={cn(
+                              "absolute right-0 top-0 h-full w-[6px] -translate-x-1/2 cursor-col-resize rounded-sm bg-transparent hover:bg-primary/50 transition-colors z-50 touch-none select-none",
+                              header.column.getIsResizing() && "bg-primary"
                             )}
+                          />
+                        )}
                       </TableHead>
                     );
                   })}
@@ -676,7 +804,8 @@ export function DataTable<TData, TValue>({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className="truncate max-w-xs whitespace-nowrap"
+                        className="truncate whitespace-nowrap"
+                        style={{ width: cell.column.getSize() }}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

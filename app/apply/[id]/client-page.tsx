@@ -94,7 +94,7 @@ export default function ApplyClientPage({ id }: { id: string }) {
           </EmptyTitle>
           <EmptyDescription className="text-l-regular w-full">
             {
-              "Congratulations! You've taken the first step towards a rewarding career at Rakamin. We look forward to learning more about you during the application process."
+              "Congratulations! You've taken the first step — we look forward to learning more about you during the application process."
             }
           </EmptyDescription>
         </EmptyContent>

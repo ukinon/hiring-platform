@@ -36,6 +36,14 @@ export default async function AdminPage({
                   label: "Active",
                   value: "active",
                 },
+                {
+                  label: "Inactive",
+                  value: "inactive",
+                },
+                {
+                  label: "Draft",
+                  value: "draft",
+                },
               ]}
               className="w-fit"
               paramName="status"

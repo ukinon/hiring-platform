@@ -37,17 +37,21 @@ export default function JobCard({
           <h2 className="text-sm md:text-l-bold text-neutral-100">
             {job.title}
           </h2>
-          <p className="text-xs md:text-m-regular text-neutral-70">Rakamin</p>
+          <p className="text-xs md:text-m-regular text-neutral-70">
+            {job.company || "Company Name"}
+          </p>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-center">
-          <MapPinIcon className="size-3 md:size-4 text-neutral-70" />
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Jakarta Selatan
-          </p>
-        </div>
+        {job.department && (
+          <div className="flex gap-2 items-center">
+            <MapPinIcon className="size-3 md:size-4 text-neutral-70" />
+            <p className="text-xs md:text-sm text-muted-foreground">
+              {job.department}
+            </p>
+          </div>
+        )}
         <div className="flex gap-2 items-center">
           <Banknote className="size-3 md:size-4 text-neutral-70" />
           <p className="text-xs md:text-sm text-muted-foreground">

@@ -62,6 +62,21 @@ const columns: ColumnDef<Candidate>[] = [
     },
   },
   {
+    accessorKey: "created_at",
+    header: createSortableHeader("APPLIED DATE"),
+    cell: ({ row }) => {
+      const date = row.getValue("created_at") as string | null;
+      if (!date) return <div className="text-muted-foreground">-</div>;
+
+      const formattedDate = new Date(date).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+      return <div className="text-muted-foreground">{formattedDate}</div>;
+    },
+  },
+  {
     accessorKey: "domicile",
     header: createSortableHeader("DOMICILE"),
     cell: ({ row }) => {

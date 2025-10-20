@@ -7,6 +7,19 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 
 export default function AdminJobCard({ job }: { job: Job }) {
+  const getBadgeVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "success";
+      case "inactive":
+        return "inactive";
+      case "draft":
+        return "draft";
+      default:
+        return "default";
+    }
+  };
+
   return (
     <Card
       key={job.id}
@@ -16,7 +29,10 @@ export default function AdminJobCard({ job }: { job: Job }) {
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant={"success"} className="rounded-sm text-xs">
+          <Badge
+            variant={getBadgeVariant(job.status)}
+            className="rounded-sm text-xs"
+          >
             {job.badge}
           </Badge>
 
@@ -27,6 +43,14 @@ export default function AdminJobCard({ job }: { job: Job }) {
         <h2 className="text-base md:text-l-bold text-neutral-100 pr-20 md:pr-0">
           {job.title}
         </h2>
+
+        {(job.department || job.company) && (
+          <div className="flex gap-2 text-xs text-muted-foreground">
+            {job.department && <span>{job.department}</span>}
+            {job.department && job.company && <span>•</span>}
+            {job.company && <span>{job.company}</span>}
+          </div>
+        )}
 
         <div className="flex justify-between items-center">
           <p className="text-xs md:text-sm text-muted-foreground">
