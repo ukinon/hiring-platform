@@ -87,7 +87,6 @@ export default function ApplicationForm({
   });
 
   const handleSubmit = (data: FieldValues) => {
-    console.log("Form submitted:", data);
     onSubmit?.({
       ...data,
       phone_number: parseInt(

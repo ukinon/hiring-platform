@@ -37,8 +37,6 @@ export default function AuthButton() {
   const { mutate } = useLogoutMutation();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-  console.log("Current user:", user);
-
   const handleLogout = () => {
     mutate();
     setShowLogoutDialog(false);

@@ -28,11 +28,8 @@ export function useJobs() {
     order,
   };
 
-  console.log("useJobs hook - parsed params:", params);
-
   return useQuery({
     queryFn: () => {
-      console.log("Calling getJobs with:", params);
       return getJobs(params);
     },
     queryKey: JOBS_QUERY_KEYS.list(params),
