@@ -53,32 +53,6 @@ export default function CreateJobForm({
           </FormField>
 
           <FormField
-            label="Department"
-            name="department"
-            required
-            control={form.control}
-          >
-            {(field) => (
-              <Input
-                placeholder="e.g. Engineering, Marketing"
-                id="department"
-                {...field}
-              />
-            )}
-          </FormField>
-
-          <FormField
-            label="Company"
-            name="company"
-            required
-            control={form.control}
-          >
-            {(field) => (
-              <Input placeholder="Company Name" id="company" {...field} />
-            )}
-          </FormField>
-
-          <FormField
             label="Job Type"
             name="type"
             required

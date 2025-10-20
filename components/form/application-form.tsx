@@ -92,6 +92,7 @@ export default function ApplicationForm({
       phone_number: parseInt(
         data.phone_number?.split("+")[1].trim().replaceAll(" ", "")
       ),
+      date_of_birth: new Date(data.date_of_birth).toISOString() || undefined,
       job_id: jobConfig.job_id,
     });
   };

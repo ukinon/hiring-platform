@@ -4,12 +4,6 @@ export const jobDetailSchema = z.object({
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
-  department: z.string().min(2, {
-    message: "Department must be at least 2 characters.",
-  }),
-  company: z.string().min(2, {
-    message: "Company name must be at least 2 characters.",
-  }),
   type: z.enum(
     ["Full-Time", "Part-Time", "Internship", "Contract", "Freelance"],
     {
