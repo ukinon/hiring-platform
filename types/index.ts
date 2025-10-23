@@ -17,8 +17,6 @@ export type Candidate = Tables<"candidates">;
 
 export type CreateJob = {
   title: string;
-  department: string;
-  company: string;
   type: "Full-Time" | "Part-Time" | "Internship" | "Contract" | "Freelance";
   description: string;
   needed_candidates: number;
