@@ -32,6 +32,11 @@ export default function JobDetail({ selectedJob }: { selectedJob: Job }) {
                   {selectedJob.department}
                 </p>
               )}
+              {selectedJob.display_text && (
+                <p className="text-sm font-medium text-primary mt-1">
+                  {selectedJob.display_text}
+                </p>
+              )}
             </div>
           </div>
 

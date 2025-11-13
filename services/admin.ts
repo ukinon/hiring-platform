@@ -73,11 +73,12 @@ export async function createJobPosting(formData: CreateJob) {
   const maxSalaryText = jobData.max_salary
     ? `Rp${new Intl.NumberFormat("id-ID").format(jobData.max_salary)}`
     : undefined;
+
   const displayText =
     jobData.min_salary && jobData.max_salary
       ? `${minSalaryText} - ${maxSalaryText}`
       : jobData.min_salary
-      ? `minSalaryText`
+      ? minSalaryText
       : maxSalaryText
       ? maxSalaryText
       : "Negotiable";
@@ -94,7 +95,7 @@ export async function createJobPosting(formData: CreateJob) {
       badge: "Active",
       cta: "Manage jobs",
       currency: "IDR",
-      display_text: displayText,
+      display_text: displayText || "Negotiable",
       started_on_text: `Started on ${new Date().toLocaleDateString("id-ID", {
         month: "long",
         day: "numeric",

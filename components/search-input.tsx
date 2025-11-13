@@ -44,7 +44,7 @@ export default function SearchInput({
             handlePageChange({
               page: 1,
               path,
-              search: value.trim() !== "" ? value : undefined,
+              search: value.trim() !== "" ? value : "",
               filters: filters || undefined,
               sort: sort || undefined,
               order: (order as "asc" | "desc") || undefined,

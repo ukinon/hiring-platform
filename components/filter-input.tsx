@@ -49,7 +49,7 @@ export default function FilterInput({
     if (
       !value &&
       defaultValue &&
-      !filters[`filter[${paramName}]`] &&
+      !filters[paramName] &&
       selectedValue !== defaultValue
     ) {
       // Set and push default
@@ -75,7 +75,7 @@ export default function FilterInput({
     // current filters from hook already decoded
     Object.entries(filters).forEach(([key, val]) => {
       // Skip if this is the one we're updating; we'll set it below (supports clearing)
-      if (key === `filter[${paramName}]`) return;
+      if (key === paramName) return;
       if (val !== undefined && val !== null && val !== "") {
         existingFilters[key] = String(val);
       }
@@ -83,10 +83,10 @@ export default function FilterInput({
 
     // Apply or clear current paramName
     if (newValue) {
-      existingFilters[`filter[${paramName}]`] = newValue;
+      existingFilters[paramName] = newValue;
     } else {
       // If cleared, ensure it's not present
-      delete existingFilters[`filter[${paramName}]`];
+      delete existingFilters[paramName];
     }
 
     // Use the handlePageChange to update the URL with all parameters
@@ -113,7 +113,7 @@ export default function FilterInput({
           : []),
         ...options,
       ]}
-      value={selectedValue || (filters[`filter[${paramName}]`] as string)}
+      value={selectedValue || (filters[paramName] as string)}
       onValueChange={handleValueChange}
       placeholder={placeholder}
       searchPlaceholder={searchPlaceholder}

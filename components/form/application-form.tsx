@@ -87,14 +87,79 @@ export default function ApplicationForm({
   });
 
   const handleSubmit = (data: FieldValues) => {
-    onSubmit?.({
-      ...data,
-      phone_number: parseInt(
-        data.phone_number?.split("+")[1].trim().replaceAll(" ", "")
-      ),
-      date_of_birth: new Date(data.date_of_birth).toISOString() || undefined,
+    const processedData: FieldValues = {
       job_id: jobConfig.job_id,
+    };
+
+    orderedFields.forEach((key) => {
+      const fieldStatus = jobConfig[key as keyof JobConfig];
+      const value = data[key];
+
+      if (!fieldStatus) return;
+
+      const isEmpty =
+        value === undefined ||
+        value === null ||
+        (typeof value === "string" && value.trim() === "");
+
+      if (isEmpty) {
+        if (fieldStatus === "required") {
+          return;
+        }
+        processedData[key] = null;
+        return;
+      }
+
+      switch (key) {
+        case "phone_number":
+          if (typeof value === "string") {
+            const phoneWithoutPrefix = value.split("+")[1];
+            if (phoneWithoutPrefix) {
+              const cleanedPhone = phoneWithoutPrefix
+                .trim()
+                .replaceAll(" ", "");
+              const parsedPhone = parseInt(cleanedPhone);
+              if (!isNaN(parsedPhone)) {
+                processedData[key] = parsedPhone;
+              } else {
+                processedData[key] = null;
+              }
+            } else {
+              processedData[key] = null;
+            }
+          }
+          break;
+
+        case "date_of_birth":
+          if (typeof value === "string") {
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              processedData[key] = date.toISOString();
+            } else {
+              processedData[key] = null;
+            }
+          } else if (value instanceof Date && !isNaN(value.getTime())) {
+            processedData[key] = value.toISOString();
+          } else {
+            processedData[key] = null;
+          }
+          break;
+
+        case "photo_profile":
+          if (value instanceof File) {
+            processedData[key] = value;
+          } else {
+            processedData[key] = null;
+          }
+          break;
+
+        default:
+          processedData[key] = value;
+          break;
+      }
     });
+
+    onSubmit?.(processedData);
   };
 
   return (

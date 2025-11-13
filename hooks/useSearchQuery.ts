@@ -58,7 +58,8 @@ export function useSearchQuery() {
 
     // Add search parameter - use provided value or preserve current
     const finalSearch = search !== undefined ? search : currentParams.search;
-    if (finalSearch) params.set("search", finalSearch);
+    if (finalSearch && finalSearch.trim() !== "")
+      params.set("search", finalSearch);
 
     // Add filter parameters - use provided filters or preserve current
     const finalFilters =

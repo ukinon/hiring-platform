@@ -47,7 +47,7 @@ export default function IndexClientPage() {
         <div className="mb-4">
           <SearchInput placeholder="Search jobs..." />
         </div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 h-[75vh]">
           {isLoading && (
             <>
               {[...Array(5)].map((_, i) => (
