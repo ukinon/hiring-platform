@@ -113,13 +113,15 @@ export default function ApplicationForm({
       switch (key) {
         case "phone_number":
           if (typeof value === "string") {
-            const phoneWithoutPrefix = value.split("+")[1];
-            if (phoneWithoutPrefix) {
+            const plusIndex = value.indexOf("+");
+            if (plusIndex !== -1 && value.length > plusIndex + 1) {
+              const phoneWithoutPrefix = value.substring(plusIndex + 1);
               const cleanedPhone = phoneWithoutPrefix
                 .trim()
-                .replaceAll(" ", "");
-              const parsedPhone = parseInt(cleanedPhone);
-              if (!isNaN(parsedPhone)) {
+                .replaceAll(" ", "")
+                .replaceAll("-", "");
+              const parsedPhone = parseInt(cleanedPhone, 10);
+              if (!isNaN(parsedPhone) && parsedPhone > 0) {
                 processedData[key] = parsedPhone;
               } else {
                 processedData[key] = null;
@@ -127,19 +129,34 @@ export default function ApplicationForm({
             } else {
               processedData[key] = null;
             }
+          } else {
+            processedData[key] = null;
           }
           break;
 
         case "date_of_birth":
-          if (typeof value === "string") {
-            const date = new Date(value);
-            if (!isNaN(date.getTime())) {
+          if (typeof value === "string" || value instanceof Date) {
+            const date = typeof value === "string" ? new Date(value) : value;
+            const now = new Date();
+            const minAge = 16;
+            const maxAge = 100;
+
+            const minDate = new Date(
+              now.getFullYear() - maxAge,
+              now.getMonth(),
+              now.getDate()
+            );
+            const maxDate = new Date(
+              now.getFullYear() - minAge,
+              now.getMonth(),
+              now.getDate()
+            );
+
+            if (!isNaN(date.getTime()) && date >= minDate && date <= maxDate) {
               processedData[key] = date.toISOString();
             } else {
               processedData[key] = null;
             }
-          } else if (value instanceof Date && !isNaN(value.getTime())) {
-            processedData[key] = value.toISOString();
           } else {
             processedData[key] = null;
           }
@@ -147,7 +164,23 @@ export default function ApplicationForm({
 
         case "photo_profile":
           if (value instanceof File) {
-            processedData[key] = value;
+            const MAX_FILE_SIZE = 5 * 1024 * 1024;
+            const ALLOWED_TYPES = [
+              "image/jpeg",
+              "image/jpg",
+              "image/png",
+              "image/webp",
+            ];
+
+            if (
+              value.size > 0 &&
+              value.size <= MAX_FILE_SIZE &&
+              ALLOWED_TYPES.includes(value.type)
+            ) {
+              processedData[key] = value;
+            } else {
+              processedData[key] = null;
+            }
           } else {
             processedData[key] = null;
           }

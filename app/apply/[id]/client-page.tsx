@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJobDetail } from "@/hooks/react-queries";
 import { ArrowLeft } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import ApplyEmptyPage from "./empty-page";
 import { useRouter } from "next/navigation";
 import ApplicationForm from "@/components/form/application-form";
@@ -25,6 +25,16 @@ export default function ApplyClientPage({ id }: { id: string }) {
   const { mutate, isPending, isSuccess } = useApplyMutation();
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (isSuccess) {
+      const timeoutId = setTimeout(() => {
+        router.push("/");
+      }, 5000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isSuccess, router]);
 
   if (!data) {
     if (isLoading) {
@@ -70,10 +80,6 @@ export default function ApplyClientPage({ id }: { id: string }) {
   }
 
   if (isSuccess) {
-    setTimeout(() => {
-      router.push("/");
-    }, 5000);
-
     return (
       <Empty>
         <EmptyHeader>

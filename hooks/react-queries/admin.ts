@@ -22,7 +22,6 @@ export function useCandidates(jobId: string) {
     page,
     limit,
     search,
-    status,
     sort,
     order,
   };

@@ -8,7 +8,7 @@ export function useApplyMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (candidateData: Partial<Candidate>) => {
-      applyToJob(candidateData);
+      return await applyToJob(candidateData);
     },
     onSuccess: (_, candidateData) => {
       queryClient.invalidateQueries({
@@ -17,7 +17,7 @@ export function useApplyMutation() {
       toast.success("Application submitted successfully!");
     },
     onError: (error) => {
-      toast.error(`Failed to apply: ${error}`);
+      toast.error(`Failed to apply: ${error.message || error}`);
     },
   });
 }
