@@ -108,6 +108,20 @@ export default function ApplyClientPage({ id }: { id: string }) {
     );
   }
 
+  if (!data.job_config || data.job_config.length === 0) {
+    return (
+      <Empty>
+        <EmptyContent>
+          <EmptyTitle>Invalid Job Configuration</EmptyTitle>
+          <EmptyDescription>
+            This job posting is missing required configuration. Please contact
+            support.
+          </EmptyDescription>
+        </EmptyContent>
+      </Empty>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center w-full overflow-hidden py-[2vh] px-2 md:px-4">
       <Card className="w-full max-w-[700px] h-[88vh] relative">

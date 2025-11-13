@@ -33,6 +33,10 @@ export function useJobs() {
       return getJobs(params);
     },
     queryKey: JOBS_QUERY_KEYS.list(params),
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -41,5 +45,9 @@ export function useJobDetail(jobId: string) {
     queryFn: () => getJob(jobId),
     queryKey: JOBS_QUERY_KEYS.detail(jobId),
     enabled: !!jobId,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }

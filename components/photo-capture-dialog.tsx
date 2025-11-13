@@ -286,13 +286,6 @@ export default function PhotoCaptureDialog({
     }
   }, []);
 
-  const disposeModel = useCallback(() => {
-    if (modelRef.current) {
-      modelRef.current.close();
-      modelRef.current = null;
-    }
-  }, []);
-
   const loadModel = useCallback(async () => {
     try {
       const vision = await FilesetResolver.forVisionTasks(
@@ -374,9 +367,8 @@ export default function PhotoCaptureDialog({
     }
     return () => {
       stopHandDetection();
-      disposeModel();
     };
-  }, [open, loadModel, stopHandDetection, disposeModel]);
+  }, [open, loadModel, stopHandDetection]);
 
   useEffect(() => {
     if (open && !capturedImage && isReady && isModelLoaded) {
@@ -421,15 +413,13 @@ export default function PhotoCaptureDialog({
       return;
 
     if (detectedPose === currentPose) {
-      let timeoutId: NodeJS.Timeout;
-
       if (currentPose === "pose1") {
-        timeoutId = setTimeout(() => {
+        setTimeout(() => {
           setCurrentPose("pose2");
           setDetectedPose(null);
         }, 800);
       } else if (currentPose === "pose2") {
-        timeoutId = setTimeout(() => {
+        setTimeout(() => {
           setCurrentPose("pose3");
           setDetectedPose(null);
         }, 800);
@@ -437,12 +427,6 @@ export default function PhotoCaptureDialog({
         setIsCountdownActive(true);
         setCountdown(3);
       }
-
-      return () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-      };
     }
   }, [
     isReady,
@@ -470,7 +454,7 @@ export default function PhotoCaptureDialog({
     return () => clearTimeout(timer);
   }, [countdown, capturePhoto]);
 
-  const handleRetake = useCallback(() => {
+  const handleRetake = () => {
     setCapturedImage(null);
     setCurrentPose("pose1");
     setDetectedPose(null);
@@ -480,14 +464,11 @@ export default function PhotoCaptureDialog({
     setIsReady(false);
     setIsModelLoaded(false);
     lastDetectionRef.current = { ...INITIAL_DETECTION_STATE };
-
-    const timeoutId = setTimeout(() => {
+    setTimeout(() => {
       setIsReady(true);
       loadModel();
     }, 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [loadModel]);
+  };
 
   const handleConfirm = () => {
     if (capturedImage) {

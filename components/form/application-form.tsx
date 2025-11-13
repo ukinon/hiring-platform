@@ -90,6 +90,7 @@ export default function ApplicationForm({
     const processedData: FieldValues = {
       job_id: jobConfig.job_id,
     };
+    const validationErrors: Record<string, string> = {};
 
     orderedFields.forEach((key) => {
       const fieldStatus = jobConfig[key as keyof JobConfig];
@@ -100,13 +101,13 @@ export default function ApplicationForm({
       const isEmpty =
         value === undefined ||
         value === null ||
-        (typeof value === "string" && value.trim() === "");
+        (typeof value === "string" && value.trim() === "") ||
+        (value instanceof Date && isNaN(value.getTime()));
 
       if (isEmpty) {
-        if (fieldStatus === "required") {
-          return;
+        if (fieldStatus === "not_required") {
+          processedData[key] = null;
         }
-        processedData[key] = null;
         return;
       }
 
@@ -124,12 +125,21 @@ export default function ApplicationForm({
               if (!isNaN(parsedPhone) && parsedPhone > 0) {
                 processedData[key] = parsedPhone;
               } else {
+                if (fieldStatus === "required") {
+                  validationErrors[key] = "Invalid phone number";
+                }
                 processedData[key] = null;
               }
             } else {
+              if (fieldStatus === "required") {
+                validationErrors[key] = "Invalid phone number";
+              }
               processedData[key] = null;
             }
           } else {
+            if (fieldStatus === "required") {
+              validationErrors[key] = "Invalid phone number";
+            }
             processedData[key] = null;
           }
           break;
@@ -137,27 +147,32 @@ export default function ApplicationForm({
         case "date_of_birth":
           if (typeof value === "string" || value instanceof Date) {
             const date = typeof value === "string" ? new Date(value) : value;
-            const now = new Date();
-            const minAge = 16;
-            const maxAge = 100;
 
-            const minDate = new Date(
-              now.getFullYear() - maxAge,
-              now.getMonth(),
-              now.getDate()
-            );
-            const maxDate = new Date(
-              now.getFullYear() - minAge,
-              now.getMonth(),
-              now.getDate()
-            );
-
-            if (!isNaN(date.getTime()) && date >= minDate && date <= maxDate) {
-              processedData[key] = date.toISOString();
+            if (!isNaN(date.getTime())) {
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, "0");
+              const day = String(date.getDate()).padStart(2, "0");
+              processedData[key] = `${year}-${month}-${day}`;
             } else {
+              if (fieldStatus === "required") {
+                const errorMessage = "Invalid date of birth";
+                validationErrors[key] = errorMessage;
+                form.setError(key, {
+                  type: "manual",
+                  message: errorMessage,
+                });
+              }
               processedData[key] = null;
             }
           } else {
+            if (fieldStatus === "required") {
+              const errorMessage = "Invalid date of birth";
+              validationErrors[key] = errorMessage;
+              form.setError(key, {
+                type: "manual",
+                message: errorMessage,
+              });
+            }
             processedData[key] = null;
           }
           break;
@@ -191,6 +206,10 @@ export default function ApplicationForm({
           break;
       }
     });
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
 
     onSubmit?.(processedData);
   };
@@ -231,9 +250,13 @@ export default function ApplicationForm({
             size="lg"
             loading={isPending}
             className="w-full"
-            disabled={form.formState.isSubmitting}
+            disabled={
+              form.formState.isSubmitting ||
+              isPending ||
+              form.formState.isSubmitSuccessful
+            }
           >
-            {form.formState.isSubmitting
+            {form.formState.isSubmitting || isPending
               ? "Submitting..."
               : "Submit Application"}
           </Button>
